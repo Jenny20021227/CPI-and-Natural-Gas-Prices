@@ -1,0 +1,92 @@
+---
+title: "GroupProject240"
+output: html_document
+date: "2024-12-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      error = TRUE, 
+                      warning = FALSE, 
+                      message = FALSE)
+library(tidyverse)
+library(ggplot2)
+```
+Understanding the change of economy throughout a decade, analyzing the factors that contribute to this, as well as what the implications for the future will be in regard to inflation of various items.
+
+What is the relationship between CPI for all urban consumers in major U.S cities and natural gas prices in the U.S from 1996 to 2016.
+
+The data for CPI was collected by the US Bureau of Labor Statistics through a collection of prices from about 4,000 housing units and approximately 26,000 retail establishments across 87 urban areas monthly. The key variables in this data set are prices of food, clothing, shelter, and fuels as well as transportation and service fees, and sales taxes.  This relates to the key question through the consumer price index in relation to the inflation of prices, and specifically natural gas prices.  This is a sample of the total population of the United States, only accounting for 88 percent of the total population. A single row of the data set represents the current value of an item in comparison to the preceding period and the year prior, allowing the analysis of inflation per item. 
+
+The data for the natural gas was obtained from the U.S. Energy Information Administration (EIA). It contains monthly prices of Natural gas from October 1983 to 2024. The prices here are recorded in nominal dollars. The key variables in this data set are date and cost for the commercial consumer. A single row in the dataset represents the monthly average price of natural gas for each month.
+
+In order to fully understand what factors may be influencing the trend or correlation between the data we are analyzing, we can research significant factors during this time period, such as politics, resources and economic trends.  
+-Bill Clinton 1993-2001, George W. Bush 2001-2009), Barack Obama 2009-2017
+-Market crash in 2010 (Flash Crash)
+
+Seasonality is an unusual factor that might affect our data visualization as both CPI and natural gas prices increase in the winter due to the need for more energy.
+It is uncertain how immediate the effect of natural gas price would be on CPI should there be a relationship between the two due to which it is difficult to account for this delay. This could potentially affect our analysis.
+Difficulty in accounting for confounding variables and factors that affected the economic landscape at the time could prevent an isolated study of the relationship between the two variables.
+
+
+```{r}
+naturalgas = read_csv("../../data/naturalgas2.csv")
+cpi = read_csv("../../data/cpi.csv")
+
+naturalgas <- naturalgas %>%
+  mutate(date = as.Date(paste0("01-", date), format = "%d-%b %Y")) %>%
+  mutate(year_month = format(date, "%Y-%m"))
+
+cpi <- cpi %>%
+  mutate(year_month = format(as.Date(DATE), "%Y-%m"))
+
+merged_data <- naturalgas %>%
+  inner_join(cpi, by = "year_month")
+```
+Understanding the economic trends that influence inflation is significant in making informed decisions and ensuring long-term success. By examining these economic trends, analyzing the factors that may contribute, as well as what the implications for the future may be in regard to inflation, a greater understanding can be gained for decision-making.  In order to do so, we decided to examine the consumer price index (CPI) and natural gas prices. Findings of this analysis will allow us to gauge the influence and impact of energy costs on inflation, thereby asking the question of interest: what is the relationship between CPI for all urban consumers in major U.S. cities and natural gas prices in the US from 1996-2016? ADD THESIS ---------------
+In order to understand the relationship and possible correlation, it is crucial to analyze past datasets over time.  This study will analyze CPI and natural gas datasets previously collected.   The data for CPI was collected by the US Bureau of Labor Statistics through a collection of prices from about 4,000 housing units and approximately 26,000 retail establishments across 87 urban areas monthly. The key variables in this data set are prices of food, clothing, shelter, and fuels as well as transportation and service fees, and sales taxes.  This relates to the key question through the consumer price index in relation to the inflation of prices, and specifically natural gas prices.  This is a sample of the total population of the United States, only accounting for 88 percent of the total population. A single row of the data set represents the current value of an item in comparison to the preceding period and the year prior, allowing the analysis of inflation per item.  The data for the natural gas was obtained from the U.S. Energy Information Administration (EIA). It contains monthly prices of Natural gas from October 1983 to 2024. The prices here are recorded in nominal dollars. The key variables in this data set are date and cost for the commercial consumer. A single row in the dataset represents the monthly average price of natural gas for each month.
+In order to fully comprehend the dynamics that have an effect on our dataset, it is crucial to consider the economic and political circumstances of the study period, in addition to seasonality.  This would include the presidencies of Bill Clinton (1993-2001), George W. Bush (2001-2009), and Barack Obama (2009-2017), as well as a key economic event of the market crash in 2010, also known as the Flash Crash.  These events may have played crucial roles in both CPI and natural gas price trends throughout 1996-2016, influencing the data analysis.  Furthermore, seasonality is an important factor to highlight when considering both CPI and natural gas prices.  For example, in the winter months, increased energy demand typically results in a rise of natural gas prices and CPI, leading to a potentially skew of the results.  It is also difficult to account for the delayed effects that changes in natural gas prices might have on CPI, as well as other confounding variables that could affect the economic conditions during this period of time.  It is crucial to carefully consider these factors when interpreting the results of the study.
+
+
+```{r}
+model <- lm(price ~ CPIAUCSL, data = merged_data)
+r_squared <- summary(model)$r.squared
+print(r_squared)
+
+t_test <- t.test(merged_data$price, merged_data$CPIAUCSL)
+print(t_test)
+
+ggplot(merged_data, aes(x = price, y = CPIAUCSL)) +
+  geom_point(color = "blue", size = 3, alpha = 0.6) + # Scatter points
+  geom_smooth(method = "lm", color = "red", se = FALSE) + # Regression line
+  labs(
+    title = "Relationship Between CPI and Natural Gas Prices",
+    x = "Natural Gas Prices",
+    y = "CPI (Consumer Price Index)",
+    caption = "Data source: Natural Gas and CPI datasets"
+  ) +
+  theme_minimal()
+
+```
+Parameters of interest:
+Mean monthly consumer price index (CPI) for key goods and services
+Mean monthly natural gas prices for commercial consumers in nominal dollars.
+
+Declare what type of inference you are using and state hypotheses.
+Inference: Regression analysis (slope)
+Null Hypothesis (H0): The mean monthly natural gas prices for commercial consumers does not influence the mean monthly consumer price index (CPI) for key goods and services. (slope = 0)
+Alternative Hypothesis (H1): The mean monthly natural gas prices for commercial consumers does not influence the mean monthly consumer price index (CPI) for key goods and services. (slope not = significant relationship)
+Check assumptions.
+
+Graphical observations and conclusions drawn:
+From the scatter plot it is evident that there exists a moderate positive correlation between natural gas prices and CPI index. This can be backed statistically by an r correlation coefficient of 0.52321413. This suggests that there is some statistical evidence to posit a relationship between natural gas prices and CPI index. The moderate correlation between natural gas prices and CPI index in the U.S points to the multi-faceted and complex nature of the various factors that affect CPI index in the economy.
+
+The p-value derived through R of 7.429137e-83, is smaller than alpha (0.05) due to which we can reject the null hypothesis in favor of the alternative hypothesis to suggest that there exists a linear relationship between natural gas prices and CPI index.
+
+Shortcomings in the analysis include lack of more specific data. The nature of both of these variables, specifically that of CPI, being driven by many other factors could potentially affect our results. Thus usage of data-sets that help isolate energy factors would allow us to get more statistically significant results. Additionally, there might exist lags that are not accounted for in the model which may have impacted our analysis.
+An assumption that is not met is the fact that both of these variables could have mutual external drivers that prevents the assumption of independence from being met.
+
+Questions that cropped during the analysis is whether there exists regional variations between the 2 variables that could be explored across various states. The analysis made us consider what major economic and political events could affect the relationship between natural gas prices and CPI index. Studying whether the change in CPI index in response to natural gas prices is delayed or not could also provide deeper insights.
+
+For future research we could perform a time series analysis to observe the trends between the two variables to see whether they mirror each other thereby offering a different perspective. Research on economic events that took place during the time such as the 2008 financial crisis and its effects on the 2 variables could improve our understanding of their relationship as well.
+
